@@ -42,3 +42,19 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .login-button { min-height:46px; }
 .text-button:hover { color:#204dc5; }
 @media (max-width:700px) { .app-content { padding-top:24px; }.page-header { margin-bottom:23px; }.balance-card,.snapshot-card,.transactions,.transfer-form,.scheduled,.category-list,.budget-card,.limit-card,.card-controls { border-radius:13px; }.assistant-fab { width:48px; height:48px; }.auth-shell:before { width:280px; height:280px; left:-150px; bottom:-100px; }.auth-layout { margin-top:43px; } }
+
+/* Confirm-step and flow-navigation styles (send money / pay a bill) */
+.review-list { margin-top:24px; border-top:1px solid var(--line); }
+.review-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 0; border-bottom:1px solid var(--line); }
+.review-row span { color:var(--muted); font-size:11px; font-weight:600; }
+.review-row strong { font-size:12px; color:var(--navy); text-align:right; }
+.review-row:last-child strong { color:var(--blue); }
+.flow-actions { display:flex; gap:10px; margin-top:22px; }
+.flow-actions .primary-button, .flow-actions .secondary-button { flex:1; }
+.secondary-button { border:1px solid var(--line); border-radius:9px; padding:12px 17px; color:var(--navy); background:#fff; font-weight:700; font-size:12px; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.secondary-button:hover { background:#f4f6fb; border-color:#cfd6e4; }
+.success-state .flow-actions { max-width:340px; margin:0 auto; }
+.biller-option { width:100%; text-align:left; background:transparent; border:1px solid transparent; border-radius:11px; padding:13px 12px; margin-top:6px; cursor:pointer; }
+.biller-option:hover { background:#f4f6fb; }
+.biller-option.selected { border-color:var(--blue); background:#eff4ff; }
+.biller-option > strong { margin-left:auto; }
