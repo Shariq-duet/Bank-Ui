@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand identity */
+    --brand: 61 58 199; /* #3D3AC7 indigo */
+    --brand-deep: 40 38 130; /* #282682 */
+    --accent: 34 211 238; /* #22D3EE cyan */
+    --secondary: 5 150 105; /* #059669 emerald */
+
+    /* Neutral system carried over from the prototype */
+    --ink: 23 35 62; /* #17233E */
+    --ink-muted: 120 131 155; /* #78839B */
+    --ink-faint: 155 164 182; /* #9BA4B6 */
+    --line: 232 235 242; /* #E8EBF2 */
+    --surface: 255 255 255;
+    --canvas: 247 248 252; /* #F7F8FC */
+
+    /* Phone shell width; desktop uses --content-width beside the sidebar. */
+    --app-width: 440px;
+    --content-width: 1360px;
+    --sidebar-width: 272px;
+    --topbar-height: 60px;
+    --bottomnav-height: 68px;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink antialiased;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    /* Desktop backdrop so the phone-width shell reads as intentional. */
+    background-image: radial-gradient(circle at 12% 0%, #ececfa 0, transparent 32rem),
+      radial-gradient(circle at 88% 100%, #e9f6f7 0, transparent 30rem);
+    background-attachment: fixed;
+  }
+
+  /* One consistent, high-contrast focus ring everywhere. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-600 ring-offset-2 ring-offset-white;
+  }
+
+  ::selection {
+    background: rgb(var(--brand) / 0.16);
+  }
+
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+@layer components {
+  /* Section eyebrow label — the prototype's signature small-caps kicker. */
+  .eyebrow {
+    @apply text-2xs font-bold uppercase tracking-eyebrow text-ink-faint;
+  }
+
+  .heading-lg {
+    @apply font-display text-[1.375rem] font-extrabold tracking-tightest text-ink;
+  }
+
+  .heading-md {
+    @apply font-display text-lg font-bold tracking-tight text-ink;
+  }
+
+  .heading-sm {
+    @apply font-display text-[0.9375rem] font-bold tracking-tight text-ink;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+
+  .hairline {
+    @apply border-b border-line last:border-b-0;
+  }
+
+  /* Scroll rails (contacts, chips) without a visible scrollbar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Range input styled to the brand — used by the spending-limit slider. */
+  .brand-range {
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-line;
+    accent-color: rgb(var(--brand));
+  }
+
+  .brand-range::-webkit-slider-thumb {
+    @apply h-5 w-5 appearance-none rounded-full border-[3px] border-white bg-brand-600;
+    box-shadow: 0 2px 8px rgb(var(--brand) / 0.4);
+  }
+
+  .brand-range::-moz-range-thumb {
+    @apply h-5 w-5 rounded-full border-[3px] border-white bg-brand-600;
+    box-shadow: 0 2px 8px rgb(var(--brand) / 0.4);
+  }
+}
+
+@layer utilities {
+  .app-shell-width {
+    max-width: var(--app-width);
+  }
+
+  /* Respects the notch / home indicator once wrapped in Capacitor. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
