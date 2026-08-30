@@ -22,3 +22,6 @@ next-env.d.ts
 
 # Playwright MCP scratch output
 .playwright-mcp
+
+# Prettier/TS leftovers
+*.tsbuildinfo

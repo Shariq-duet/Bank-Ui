@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   // Pin the workspace root: an unrelated lockfile sits in the parent directory.
   outputFileTracingRoot: process.cwd(),
 }
