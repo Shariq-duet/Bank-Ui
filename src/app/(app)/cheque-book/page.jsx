@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BookText, Home, Ban } from 'lucide-react'
-import { agentProps } from '@/lib/agent'
+import { agentProps, broadcastScreen } from '@/lib/agent'
 import { ROUTES } from '@/lib/constants'
 import { useAccounts, useBankStore } from '@/hooks/use-bank-store'
 import { Button, ButtonLink, Card, Input, Select, Tabs } from '@/components/ui'
@@ -38,6 +38,11 @@ export default function ChequeBookPage() {
   const [reason, setReason] = useState('lost')
   const account = accounts.find((entry) => entry.id === accountId) ?? accounts[0]
   const reference = `CHQ${Math.floor(10_000_000 + Math.random() * 89_999_999)}`
+  // Success is internal state (no route change) — broadcast it so the voice
+  // agent can end its guided flow and highlight the "Back to home" button.
+  useEffect(() => {
+    broadcastScreen(submitted ? 'cheque-success-screen' : 'cheque-book-screen')
+  }, [submitted])
   if (submitted) {
     const isRequest = submitted === 'request'
     return (

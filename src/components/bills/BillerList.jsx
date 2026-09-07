@@ -16,7 +16,7 @@ export function BillerList({ selectedId, onSelect }) {
       )
     : billers
   return (
-    <div>
+    <div {...agentProps('paybill-biller-select')}>
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <label htmlFor="biller-search" className="sr-only">

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Home, Image as ImageIcon, ScanLine, Store, Zap } from 'lucide-react'
-import { agentProps } from '@/lib/agent'
+import { agentProps, broadcastScreen } from '@/lib/agent'
 import { ROUTES } from '@/lib/constants'
 import { formatCurrency, parseAmount, sanitiseAmount } from '@/lib/format'
 import { merchants } from '@/lib/mock-data'
@@ -31,6 +31,13 @@ export default function QrPayPage() {
   const [reference, setReference] = useState('')
   const amount = parseAmount(qr.amount)
   const fromAccount = accounts.find((entry) => entry.id === fromAccountId) ?? accounts[0]
+  // The scan → confirm → success transition is internal state, not a route
+  // change, so broadcast it ourselves — the voice agent's guided flow and its
+  // auto-advance key off these screen ids.
+  useEffect(() => {
+    const screen = step === 'success' ? 'qrpay-success-screen' : step === 'confirm' ? 'qrpay-confirm-screen' : 'qr-pay-screen'
+    broadcastScreen(screen)
+  }, [step])
   const completePayment = () => {
     setReference(`QRP${Math.floor(100_000_000 + Math.random() * 899_999_999)}`)
     setStep('success')

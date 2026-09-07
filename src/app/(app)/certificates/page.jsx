@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BadgeCheck, FileText, Home, Landmark, Receipt } from 'lucide-react'
-import { agentProps } from '@/lib/agent'
+import { agentProps, broadcastScreen } from '@/lib/agent'
 import { ROUTES } from '@/lib/constants'
 import { CUSTOMER } from '@/lib/mock-data'
 import { useAccounts, useBankStore } from '@/hooks/use-bank-store'
@@ -55,6 +55,11 @@ export default function CertificatesPage() {
   const account = accounts.find((entry) => entry.id === accountId) ?? accounts[0]
   const certificate = CERTIFICATES.find((entry) => entry.id === selected) ?? CERTIFICATES[0]
   const reference = `CRT${Math.floor(10_000_000 + Math.random() * 89_999_999)}`
+  // Success is internal state (no route change) — broadcast it so the voice
+  // agent can end its guided flow and highlight the "Back to home" button.
+  useEffect(() => {
+    broadcastScreen(submitted ? 'certificate-success-screen' : 'certificates-screen')
+  }, [submitted])
   if (submitted) {
     return (
       <div className="flex flex-col gap-4 pt-4 lg:mx-auto lg:w-full lg:max-w-2xl">

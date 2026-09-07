@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CircleHelp } from 'lucide-react'
+import { initAgentBridge } from '@/lib/agentBridge'
 import { BANK_DISCLAIMER, ROUTES } from '@/lib/constants'
 import { useAuth } from '@/hooks/use-auth'
 import { AuthHero } from '@/components/auth/AuthHero'
@@ -15,6 +16,10 @@ export default function LoginPage() {
   useEffect(() => {
     if (hydrated && isAuthenticated) router.replace(ROUTES.dashboard)
   }, [hydrated, isAuthenticated, router])
+  // Same lifetime as the screen broadcaster: one voice-agent bridge per session.
+  useEffect(() => {
+    initAgentBridge()
+  }, [])
   return (
     <main className="flex min-h-dvh flex-col px-4 py-6 pb-safe pt-safe md:px-6 md:py-10">
       <ScreenBroadcaster />

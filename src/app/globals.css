@@ -243,3 +243,123 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Voice-agent highlight (src/lib/agentBridge.js). The Python agent's
+ * AGENT_HIGHLIGHT messages drop this class onto the targeted element: a
+ * steady brand ring with a breathing halo, legible from across a room.
+ *
+ * Deliberately outside @layer so the ring reliably paints over any utility
+ * shadow the element already carries, and on a white gap so it still reads
+ * against the indigo balance card and other brand fills.
+ */
+@keyframes agent-highlight-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px rgb(var(--surface)),
+      0 0 0 6px rgb(var(--brand)),
+      0 0 24px 4px rgb(var(--brand) / 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgb(var(--surface)),
+      0 0 0 6px rgb(var(--brand)),
+      0 0 40px 8px rgb(var(--brand) / 0.55);
+  }
+}
+
+.agent-highlight {
+  animation: agent-highlight-pulse 1.4s ease-in-out infinite;
+  position: relative;
+  z-index: 50;
+  /* White contrast ring ensures the highlight stands out against any background */
+  outline: 3px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 4px;
+}
+
+/*
+ * The global reduced-motion rule above freezes animations at their base
+ * value, which would hide the ring entirely — fall back to a static one.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .agent-highlight {
+    animation: none;
+    box-shadow:
+      0 0 0 3px rgb(var(--surface)),
+      0 0 0 6px rgb(var(--brand)),
+      0 0 24px 6px rgb(var(--brand) / 0.5);
+  }
+  .agent-indicator {
+    animation: none;
+  }
+}
+
+/*
+ * Floating arrow indicator — created by agentBridge.js and positioned above
+ * the highlighted element via fixed viewport coordinates. A large bouncing
+ * arrow with a pulsing circle behind it, impossible to miss.
+ */
+.agent-indicator {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.agent-indicator-arrow {
+  font-size: 48px;
+  line-height: 1;
+  color: rgb(var(--brand));
+  text-shadow:
+    -2px -2px 0 white, 2px -2px 0 white,
+    -2px  2px 0 white, 2px  2px 0 white,
+    0 3px 10px rgb(var(--brand) / 0.6);
+  animation: agent-arrow-bounce 0.7s ease-in-out infinite;
+}
+
+.agent-indicator-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgb(var(--brand));
+  box-shadow:
+    0 0 0 3px white,
+    0 0 20px rgb(var(--brand) / 0.8);
+  animation: agent-dot-pulse 1.4s ease-in-out infinite;
+  margin-top: 2px;
+}
+
+@keyframes agent-arrow-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(10px); }
+}
+
+@keyframes agent-dot-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 16px rgb(var(--brand) / 0.7);
+  }
+  50% {
+    transform: scale(1.5);
+    box-shadow: 0 0 28px rgb(var(--brand) / 0.3);
+  }
+}
+
+/*
+ * Brief flash applied by agentBridge.js when it receives an AGENT_CLICK —
+ * gives the agent's simulated click a visible pop before the element's own
+ * handler navigates away. Removed after 400 ms by the bridge.
+ */
+@keyframes agent-click-flash {
+  0%   { box-shadow: inset 0 0 0 3px rgb(var(--brand) / 0.8); }
+  50%  { box-shadow: inset 0 0 0 3px rgb(var(--brand) / 0.4), 0 0 12px rgb(var(--brand) / 0.5); }
+  100% { box-shadow: inset 0 0 0 3px transparent; }
+}
+
+.agent-click {
+  animation: agent-click-flash 0.4s ease-out;
+  box-shadow: 0 0 0 4px rgb(var(--brand) / 0.6), 0 0 24px rgb(var(--brand) / 0.4);
+}

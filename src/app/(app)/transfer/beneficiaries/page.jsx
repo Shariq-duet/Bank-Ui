@@ -129,7 +129,12 @@ export default function BeneficiariesPage() {
         agentId="beneficiary-remove-modal"
         footer={
           <div className="flex gap-2">
-            <Button variant="secondary" fullWidth onClick={() => setPendingRemoval(null)}>
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setPendingRemoval(null)}
+              {...agentProps('beneficiary-keep-btn')}
+            >
               Keep
             </Button>
             <Button

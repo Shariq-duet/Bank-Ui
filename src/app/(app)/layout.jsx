@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { initAgentBridge } from '@/lib/agentBridge'
 import { ROUTES } from '@/lib/constants'
 import { useAuth } from '@/hooks/use-auth'
 import { SkeletonScreen } from '@/components/ui'
@@ -11,6 +12,8 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { AssistantFab } from '@/components/layout/AssistantFab'
+import { MicButton } from '@/components/layout/MicButton'
+import { LanguagePicker } from '@/components/layout/LanguagePicker'
 import { ChatModal } from '@/components/chat/ChatModal'
 
 /**
@@ -27,6 +30,10 @@ export default function AppLayout({ children }) {
   useEffect(() => {
     if (hydrated && !isAuthenticated) router.replace(ROUTES.login)
   }, [hydrated, isAuthenticated, router])
+  // Same lifetime as the screen broadcaster: one voice-agent bridge per session.
+  useEffect(() => {
+    initAgentBridge()
+  }, [])
   if (!hydrated || !isAuthenticated) {
     return (
       <div className="mx-auto app-shell-width w-full px-4 py-8">
@@ -51,6 +58,8 @@ export default function AppLayout({ children }) {
           {children}
         </main>
         <AssistantFab />
+        <LanguagePicker />
+        <MicButton />
         <BottomNav />
         <ChatModal />
       </div>
