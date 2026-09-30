@@ -147,6 +147,26 @@ function onScreenChange(event) {
   })
 }
 
+let currentAgentAudio = null
+
+function playNeuralAudio(base64Audio) {
+  if (!base64Audio || typeof window === 'undefined') return
+  try {
+    if (window.speechSynthesis) window.speechSynthesis.cancel()
+    if (currentAgentAudio) {
+      currentAgentAudio.pause()
+      currentAgentAudio.currentTime = 0
+    }
+    const sound = new Audio('data:audio/mp3;base64,' + base64Audio)
+    currentAgentAudio = sound
+    sound.play().catch((err) => {
+      console.warn('[bridge] Neural audio autoplay note:', err)
+    })
+  } catch (err) {
+    console.error('[bridge] Audio playback failed:', err)
+  }
+}
+
 function onSocketMessage(event) {
   let message
   try {
@@ -160,8 +180,10 @@ function onSocketMessage(event) {
     } else if (message.targetId) {
       highlightTarget(message.targetId)
     }
-    // Speak step-by-step guidance (Urdu) if the agent included it
-    if (message.flowGuidance) {
+    // High-fidelity neural audio stream takes priority over browser robot synthesis
+    if (message.audio) {
+      playNeuralAudio(message.audio)
+    } else if (message.flowGuidance) {
       speakFlowGuidance(message.flowGuidance)
     }
   }
@@ -178,15 +200,11 @@ function clickTarget(targetId) {
 }
 
 /**
- * Speak flow-guidance text via the browser's Web Speech API.
- * Used for step-by-step instructions during send-money / pay-bill flows.
- * Falls back silently if speech synthesis is unavailable.
+ * Speak flow-guidance text via the browser's Web Speech API as fallback only.
  */
 function speakFlowGuidance(text) {
   if (!text || typeof window === 'undefined' || !window.speechSynthesis) return
   window.speechSynthesis.cancel() // stop any previous speech
-  // getVoices() is async — it may return empty the first time. Pre-loading
-  // and re-querying after voiceschanged ensures we always have voices.
   const trySpeak = () => {
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = 'ur-PK'
@@ -200,7 +218,6 @@ function speakFlowGuidance(text) {
     trySpeak()
   } else {
     window.speechSynthesis.addEventListener('voiceschanged', trySpeak, { once: true })
-    // Also try immediately in case voiceschanged never fires
     setTimeout(trySpeak, 100)
   }
 }
