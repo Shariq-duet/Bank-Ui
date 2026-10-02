@@ -17,7 +17,11 @@ import { AGENT_SCREEN_EVENT } from '@/lib/agent'
  * without the bridge.
  */
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_AGENT_SOCKET_URL || 'ws://localhost:8765/ws'
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_AGENT_SOCKET_URL ||
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'ws://localhost:8765/ws'
+    : 'wss://rasta-ai-production.up.railway.app/ws')
 const HIGHLIGHT_CLASS = 'agent-highlight'
 /** A highlight clears on the next screen change, or after this long. */
 const HIGHLIGHT_DURATION_MS = 30_000
