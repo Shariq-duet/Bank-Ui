@@ -54,9 +54,12 @@ export function sendAgentAudio(base64Audio, mimeType) {
   send({ type: 'AGENT_AUDIO', audio: base64Audio, mimeType: mimeType || 'audio/webm' })
 }
 
+let currentLanguage = 'ur'
+
 /** Tell the agent which language the user will speak in. */
 export function sendLanguageChoice(language) {
-  send({ type: 'AGENT_LANGUAGE', language })
+  if (language) currentLanguage = language
+  send({ type: 'AGENT_LANGUAGE', language: currentLanguage })
 }
 
 function clearHighlight() {
@@ -151,20 +154,77 @@ function onScreenChange(event) {
   })
 }
 
-let currentAgentAudio = null
+/** Send typed or simulated scenario utterance to the agent. */
+export function sendAgentUtterance(text) {
+  send({ type: 'AGENT_UTTERANCE', text })
+}
 
-function playNeuralAudio(base64Audio) {
+/** Notify agent backend when a modal or sheet opens or closes. */
+export function sendAgentModalState(data) {
+  send({ type: 'AGENT_MODAL_STATE', ...data })
+}
+
+/** Notify agent backend when a guided form step is completed by the user. */
+export function sendAgentStepCompleted(step) {
+  send({ type: 'AGENT_STEP_COMPLETED', step })
+}
+
+export { clearHighlight }
+
+let currentAgentAudio = null
+let isAutofillAudioPlaying = false
+
+/** Immediately cancel any currently playing neural audio or browser speech. */
+export function stopAgentAudio() {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel()
+  }
+  if (currentAgentAudio) {
+    try {
+      currentAgentAudio.pause()
+      currentAgentAudio.currentTime = 0
+    } catch {
+      // Ignore pause errors
+    }
+    currentAgentAudio = null
+  }
+  isAutofillAudioPlaying = false
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('AGENT_SPEECH_STATE', { detail: { speaking: false } }))
+  }
+}
+
+function playNeuralAudio(base64Audio, isAutofill = false, onEndCallback) {
   if (!base64Audio || typeof window === 'undefined') return
   try {
     if (window.speechSynthesis) window.speechSynthesis.cancel()
     if (currentAgentAudio) {
+      // Protect active smart form explanation voice from being overwritten by generic navigation audio
+      if (isAutofillAudioPlaying && !isAutofill) {
+        return
+      }
       currentAgentAudio.pause()
       currentAgentAudio.currentTime = 0
     }
+    if (isAutofill) {
+      isAutofillAudioPlaying = true
+    }
     const sound = new Audio('data:audio/mp3;base64,' + base64Audio)
     currentAgentAudio = sound
+    window.dispatchEvent(new CustomEvent('AGENT_SPEECH_STATE', { detail: { speaking: true } }))
+    sound.addEventListener('ended', () => {
+      isAutofillAudioPlaying = false
+      window.dispatchEvent(new CustomEvent('AGENT_SPEECH_STATE', { detail: { speaking: false } }))
+      if (onEndCallback) onEndCallback()
+    })
+    sound.addEventListener('error', () => {
+      isAutofillAudioPlaying = false
+      window.dispatchEvent(new CustomEvent('AGENT_SPEECH_STATE', { detail: { speaking: false } }))
+    })
     sound.play().catch((err) => {
       console.warn('[bridge] Neural audio autoplay note:', err)
+      isAutofillAudioPlaying = false
+      window.dispatchEvent(new CustomEvent('AGENT_SPEECH_STATE', { detail: { speaking: false } }))
     })
   } catch (err) {
     console.error('[bridge] Audio playback failed:', err)
@@ -179,6 +239,13 @@ function onSocketMessage(event) {
     return // The agent protocol is JSON-only; anything else is ignored.
   }
   if (message?.type === 'AGENT_HIGHLIGHT') {
+    const isAutofill = Boolean(message.autofill)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('AGENT_UPDATE', { detail: message }))
+      if (message.autofill) {
+        window.dispatchEvent(new CustomEvent('AGENT_AUTOFILL', { detail: message.autofill }))
+      }
+    }
     if (Array.isArray(message.targetIds)) {
       highlightTargets(message.targetIds)
     } else if (message.targetId) {
@@ -186,9 +253,11 @@ function onSocketMessage(event) {
     }
     // High-fidelity neural audio stream takes priority over browser robot synthesis
     if (message.audio) {
-      playNeuralAudio(message.audio)
+      playNeuralAudio(message.audio, isAutofill)
     } else if (message.flowGuidance) {
-      speakFlowGuidance(message.flowGuidance)
+      if (!isAutofillAudioPlaying) {
+        speakFlowGuidance(message.flowGuidance)
+      }
     }
   }
   if (message?.type === 'AGENT_CLICK') clickTarget(message.targetId)
@@ -249,6 +318,7 @@ function connect() {
   }
   socket.addEventListener('open', () => {
     reconnectAttempts = 0
+    send({ type: 'AGENT_LANGUAGE', language: currentLanguage })
     // A late-starting or restarted agent missed the last screen change —
     // catch it up with the screen the customer is on right now.
     if (window.__AGENT_SCREEN__) {
