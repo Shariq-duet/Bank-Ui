@@ -40,7 +40,7 @@ export function LoginForm() {
           label="User ID or registered mobile"
           type="text"
           autoComplete="username"
-          value={userId}
+          value={userId}    
           onChange={(event) => setUserId(event.target.value)}
           placeholder="ayesha.siddiqui"
           required
