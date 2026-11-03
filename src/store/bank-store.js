@@ -69,7 +69,7 @@ function persistentId(prefix) {
 export const useBankStore = create()(
   persist(
     (set, get) => ({
-      isAuthenticated: false,
+      isAuthenticated: true,
       hydrated: false,
       selectedAccountId: DEFAULT_ACCOUNT_ID,
       showBalance: true,
@@ -84,7 +84,7 @@ export const useBankStore = create()(
       login: () => set({ isAuthenticated: true }),
       logout: () =>
         set({
-          isAuthenticated: false,
+          isAuthenticated: true,
           selectedAccountId: DEFAULT_ACCOUNT_ID,
           // Signing out resets the demo, saved payees included.
           beneficiaries: seedBeneficiaries,
